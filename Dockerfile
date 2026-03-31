@@ -9,4 +9,5 @@ WORKDIR /app
 RUN flutter clean
 RUN flutter build web
 FROM nginx
+EXPOSE 4444
 COPY --from=build /app/build/web /usr/share/nginx/html
