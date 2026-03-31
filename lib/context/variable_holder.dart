@@ -9,7 +9,7 @@ import 'package:budget_app/dto/category_data.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class VariableHolder {
-  static AppProfile profile = AppProfile.local;
+  static AppProfile profile = AppProfile.azure;
 
   static List<CategoryData> CATEGORIES = [];
 
