@@ -104,124 +104,141 @@ class _BarChartViewState extends State<BarChartView> {
 
   @override
   Widget build(BuildContext context) {
+    List<Widget> colChildren = [
+      Text(
+        "Trends",
+        style: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      SizedBox(height: 4),
+      // Sub-headline with dynamic date range
+      Text(
+        _formatDateRange(_dateRange),
+        style: TextStyle(
+          fontSize: 16,
+          color: Colors.grey[600],
+        ),
+      ),
+      SizedBox(height: 8),
+
+      // Date Range Picker Button
+      ElevatedButton.icon(
+        onPressed: _pickDateRange,
+        icon: Icon(Icons.date_range),
+        label: Text("Select Date Range"),
+      ),
+      SizedBox(height: 20),
+    ];
+
+    colChildren.addAll(_buildChart());
+
     return Scaffold(
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Headline
-              Text(
-                "Trends",
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 4),
-              // Sub-headline with dynamic date range
-              Text(
-                _formatDateRange(_dateRange),
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[600],
-                ),
-              ),
-              SizedBox(height: 8),
-
-              // Date Range Picker Button
-              ElevatedButton.icon(
-                onPressed: _pickDateRange,
-                icon: Icon(Icons.date_range),
-                label: Text("Select Date Range"),
-              ),
-              SizedBox(height: 20),
-
-              // Chart
-              Expanded(
-                child: BarChart(
-                  BarChartData(
-                    alignment: BarChartAlignment.spaceAround,
-                    maxY: _findMaxValue(),
-                    barGroups: _createGroups(),
-                    titlesData: FlTitlesData(
-                      leftTitles: AxisTitles(
-                        sideTitles:
-                            SideTitles(showTitles: true, reservedSize: 40),
-                      ),
-                      bottomTitles: AxisTitles(
-                        sideTitles: SideTitles(
-                          showTitles: false,
-                          getTitlesWidget: (double value, TitleMeta meta) {
-                            switch (value.toInt()) {
-                              case 0:
-                                return Text("A");
-                              case 1:
-                                return Text("B");
-                              case 2:
-                                return Text("C");
-                              default:
-                                return Text("");
-                            }
-                          },
-                        ),
-                      ),
-                      rightTitles:
-                          AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                      topTitles:
-                          AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    ),
-                    gridData: FlGridData(show: true),
-                    borderData: FlBorderData(show: false),
-                  ),
-                ),
-              ),
-              SizedBox(height: 20),
-
-              // Legend
-              Wrap(
-                spacing: 16,
-                children: _visibleSeries.keys.map((series) {
-                  final isVisible = _visibleSeries[series]!;
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _visibleSeries[series] = !isVisible;
-                      });
-                    },
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 16,
-                          height: 16,
-                          decoration: BoxDecoration(
-                            color: isVisible
-                                ? _getSeriesColor(series)
-                                : Colors.grey,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        SizedBox(width: 6),
-                        Text(
-                          series,
-                          style: TextStyle(
-                            color: isVisible ? Colors.black : Colors.grey,
-                            fontWeight:
-                                isVisible ? FontWeight.bold : FontWeight.normal,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
+            children: colChildren,
           ),
         ),
       ),
     );
+  }
+
+  List<Widget> _buildChart() {
+    if (currentMonth.isEmpty && previousMonth.isEmpty) {
+      return [
+        SizedBox(
+            height: 32
+        ),
+        Center(
+            child: SizedBox(
+                height: 32,
+                child: const Text('No data available')
+            )
+        )
+      ];
+    } else {
+      return [
+        Expanded(
+          child: BarChart(
+            BarChartData(
+              alignment: BarChartAlignment.spaceAround,
+              maxY: _findMaxValue(),
+              barGroups: _createGroups(),
+              titlesData: FlTitlesData(
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(showTitles: true, reservedSize: 40),
+                ),
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: false,
+                    getTitlesWidget: (double value, TitleMeta meta) {
+                      switch (value.toInt()) {
+                        case 0:
+                          return Text("A");
+                        case 1:
+                          return Text("B");
+                        case 2:
+                          return Text("C");
+                        default:
+                          return Text("");
+                      }
+                    },
+                  ),
+                ),
+                rightTitles:
+                    AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                topTitles:
+                    AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              ),
+              gridData: FlGridData(show: true),
+              borderData: FlBorderData(show: false),
+            ),
+          ),
+        ),
+        SizedBox(height: 20),
+
+        // Legend
+        Wrap(
+          spacing: 16,
+          children: _visibleSeries.keys.map((series) {
+            final isVisible = _visibleSeries[series]!;
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  _visibleSeries[series] = !isVisible;
+                });
+              },
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 16,
+                    height: 16,
+                    decoration: BoxDecoration(
+                      color: isVisible ? _getSeriesColor(series) : Colors.grey,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  SizedBox(width: 6),
+                  Text(
+                    series,
+                    style: TextStyle(
+                      color: isVisible ? Colors.black : Colors.grey,
+                      fontWeight:
+                          isVisible ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        )
+      ];
+    }
   }
 
   List<BarChartGroupData> _createGroups() {
@@ -264,7 +281,9 @@ class _BarChartViewState extends State<BarChartView> {
   double _findMaxValue() {
     double previousMonthMaxValue = _findMaxValueFromList(previousMonth);
     double currentMonthMaxValue = _findMaxValueFromList(currentMonth);
-    return previousMonthMaxValue > currentMonthMaxValue ? previousMonthMaxValue : currentMonthMaxValue;
+    return previousMonthMaxValue > currentMonthMaxValue
+        ? previousMonthMaxValue
+        : currentMonthMaxValue;
   }
 
   double _findMaxValueFromList(List<Map<String, dynamic>> values) {
@@ -279,7 +298,9 @@ class _BarChartViewState extends State<BarChartView> {
 
   bool _isVisible(Map<String, dynamic> value) {
     String categoryName = value["category"]["name"];
-    return _visibleSeries[categoryName] != null ? _visibleSeries[categoryName]! : false;
+    return _visibleSeries[categoryName] != null
+        ? _visibleSeries[categoryName]!
+        : false;
   }
 
   Color _getSeriesColor(String series) {

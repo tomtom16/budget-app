@@ -9,6 +9,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 import '../dto/login_response.dart';
+import '../dto/register_response.dart';
 
 class BudgetService {
   static Color parseColor(String hexColor) {
@@ -146,6 +147,29 @@ class BudgetService {
     }
   }
 
+  static Future<RegisterResponse> register(LoginRequest data) async {
+    final Dio dio = VariableHolder.getDio();
+    final response = await dio.post(
+      "${VariableHolder.getAuthBaseUrl()}/api/v1/register",
+      data: jsonEncode(data.toJson()),
+      options: Options(
+        headers: {
+          'X-Api-Key': '11112', // replace with your real key
+        },
+      ),
+    );
+
+    if (response.statusCode == 200) {
+      final decoded = response.data is String
+          ? json.decode(response.data)
+          : response.data;
+
+      return _parseRegisterResponse(decoded);
+    } else {
+      throw Future.error('Register Error');
+    }
+  }
+
   static Future<Response<dynamic>> submitTransaction(dynamic data) async {
     final Dio dio = VariableHolder.getDio();
     final response = await dio.post(
@@ -213,11 +237,19 @@ class BudgetService {
 
   static LoginResponse _parseLoginResponse(dynamic data) {
     return LoginResponse(
-      token: data['token'],
-      refreshToken: data['refreshToken'],
-      validUntil: data['validUntil'] != null ? data['validUntil'] : '',
-      username: data['username'],
-      uid: data['uid']
+        token: data['token'],
+        refreshToken: data['refreshToken'],
+        validUntil: data['validUntil'] != null ? data['validUntil'] : '',
+        username: data['username'],
+        uid: data['uid']
+    );
+  }
+
+  static RegisterResponse _parseRegisterResponse(dynamic data) {
+    return RegisterResponse(
+        id: data['id'],
+        username: data['username'],
+        createdAt: data['createdAt'],
     );
   }
 }

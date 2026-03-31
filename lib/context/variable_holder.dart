@@ -9,7 +9,7 @@ import 'package:budget_app/dto/category_data.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class VariableHolder {
-  static AppProfile profile = AppProfile.azure;
+  static AppProfile profile = AppProfile.local;
 
   static List<CategoryData> CATEGORIES = [];
 
@@ -36,7 +36,7 @@ class VariableHolder {
         return "https://budget-service.20.105.38.239.sslip.io";
       case AppProfile.local:
       default:
-        return "http://localhost:8080";
+        return "http://localhost:8088";
     }
   }
 
@@ -53,7 +53,7 @@ class VariableHolder {
   static Dio getDio() {
     if (!_dioPrepared) {
       // Add logging interceptor
-      dio.interceptors.add(AuthInterceptor(storage));
+      dio.interceptors.add(AuthInterceptor(dio, storage));
       dio.interceptors.add(
         InterceptorsWrapper(
           onRequest: (options, handler) {

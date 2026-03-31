@@ -66,6 +66,10 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
+  Future<void> removeAuth() async {
+    await _storage.deleteAll();
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isAuthenticated) {
@@ -97,6 +101,13 @@ class _MainScreenState extends State<MainScreen> {
                         setState(() => _selectedPage = page);
                         Navigator.of(context).pop(); // close drawer
                       },
+                      onLogout: (status) {
+                        _isAuthenticated = status;
+
+                        removeAuth();
+
+                        setState(() {});
+                      },
                       isMobile: isMobile,
                     ),
                   )
@@ -110,6 +121,10 @@ class _MainScreenState extends State<MainScreen> {
                       selectedPage: _selectedPage,
                       onPageSelected: (page) {
                         setState(() => _selectedPage = page);
+                      },
+                      onLogout: (status) {
+                        _isAuthenticated = status;
+                        setState(() {});
                       },
                       isMobile: isMobile,
                     ),

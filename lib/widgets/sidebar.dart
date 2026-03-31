@@ -5,12 +5,14 @@ class Sidebar extends StatefulWidget {
   final bool isAuthenticated;
   final AppPage selectedPage;
   final ValueChanged<AppPage> onPageSelected;
+  final ValueChanged<bool> onLogout;
   final bool isMobile;
 
   Sidebar({
     required this.isAuthenticated,
     required this.selectedPage,
     required this.onPageSelected,
+    required this.onLogout,
     required this.isMobile
   });
 
@@ -27,6 +29,12 @@ class _SidebarState extends State<Sidebar> {
   void toggleCollapse() {
     setState(() {
       isCollapsed = !isCollapsed;
+    });
+  }
+
+  void toggleAuth() {
+    setState(() {
+      widget.onLogout(false);
     });
   }
 
@@ -101,6 +109,7 @@ class _SidebarState extends State<Sidebar> {
           Spacer(),
           _buildHideButton(),
           SizedBox(height: 16),
+          _buildLogoutButton()
         ],
       ),
     );
@@ -116,6 +125,22 @@ class _SidebarState extends State<Sidebar> {
           size: 18,
         ),
         onPressed: toggleCollapse,
+      );
+    } else {
+      return SizedBox(height: 16);
+    }
+  }
+
+  Widget _buildLogoutButton() {
+    if (!isMobile) {
+      // Collapse Button
+      return IconButton(
+        icon: Icon(
+          Icons.logout,
+          color: Colors.white70,
+          size: 18,
+        ),
+        onPressed: toggleAuth,
       );
     } else {
       return SizedBox(height: 16);
