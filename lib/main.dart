@@ -145,7 +145,7 @@ class _MainScreenState extends State<MainScreen> {
       );
     } else {
       return MaterialApp(
-        title: "Flutter Protected App",
+        title: "Budget App",
         theme: ThemeData(
           useMaterial3: true, // ✅ Enables Material 3
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
