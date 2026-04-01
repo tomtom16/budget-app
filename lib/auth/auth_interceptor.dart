@@ -1,12 +1,12 @@
 import 'dart:async';
 
+import 'package:budget_app/auth/token_storage.dart';
 import 'package:budget_app/context/variable_holder.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthInterceptor extends Interceptor {
   final Dio dio;
-  final FlutterSecureStorage storage;
+  final TokenStorage storage;
 
   bool _isRefreshing = false;
   List<Completer<String>> _retryQueue = [];
@@ -14,8 +14,9 @@ class AuthInterceptor extends Interceptor {
   AuthInterceptor(this.dio, this.storage);
 
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
-    final token = await storage.read(key: 'authToken');
+  void onRequest(
+      RequestOptions options, RequestInterceptorHandler handler) async {
+    final token = await storage.getAccessToken();
 
     if (token != null) {
       options.headers['Authorization'] = 'Bearer $token';
@@ -63,21 +64,21 @@ class AuthInterceptor extends Interceptor {
     _isRefreshing = true;
 
     try {
-      final refreshToken = await storage.read(key: 'refreshToken');
+      final refreshToken = await storage.getRefreshToken();
 
       final response = await dio.post(
-        VariableHolder.getAuthBaseUrl() +  '/refresh',
+        VariableHolder.getAuthBaseUrl() + '/refresh',
         data: {'refreshToken': refreshToken},
         options: Options(headers: {'X-Api-Key': '11112'}), // important!
       );
 
       final newAccessToken = response.data['token'];
 
-      await storage.write(key: 'authToken', value: newAccessToken);
+      await storage.saveAccessToken(newAccessToken);
 
       final newRefreshToken = response.data['refreshToken'];
 
-      await storage.write(key: 'refreshToken', value: newRefreshToken);
+      await storage.saveRefreshToken(newRefreshToken);
 
       // Resolve all waiting requests
       for (var completer in _retryQueue) {
@@ -92,7 +93,7 @@ class AuthInterceptor extends Interceptor {
   }
 
   Future<void> _logout() async {
-    await storage.deleteAll();
+    await storage.clear();
 
     // TODO: Navigate to login screen
   }

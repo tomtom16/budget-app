@@ -1,7 +1,10 @@
+import 'package:budget_app/auth/auth_state.dart';
+import 'package:budget_app/context/variable_holder.dart';
 import 'package:budget_app/views/login.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import 'auth/token_storage.dart';
+import 'auth/token_storage_factory.dart';
 import 'enums/enums.dart';
 import 'views/add_entry_view.dart';
 import 'views/dashboard.dart';
@@ -11,35 +14,58 @@ import 'views/transactions.dart';
 import 'views/trends.dart';
 import 'widgets/sidebar.dart';
 
-void main() {
-  runApp(MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final storage = createTokenStorage();
+  final authState = AuthState(storage);
+
+  await authState.init(); // 🔥 important
+
+  runApp(MyApp(authState, storage));
 }
 
 class MyApp extends StatelessWidget {
+  final AuthState authState;
+  final TokenStorage storage;
+
+  const MyApp(this.authState, this.storage);
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Budget App',
-      theme: ThemeData.light(),
-      home: MainScreen(),
+    return AnimatedBuilder(
+      animation: authState,
+      builder: (context, _) {
+        return MaterialApp(
+          title: 'Budget App',
+          theme: ThemeData.light(),
+          home: MainScreen(authState),
+        );
+      },
     );
   }
 }
 
 class MainScreen extends StatefulWidget {
+  AuthState authState;
+
+  MainScreen(this.authState);
+
   @override
   State<MainScreen> createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
-  bool _isAuthenticated = false;
   AppPage _selectedPage = AppPage.dashboard;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  final FlutterSecureStorage _storage = FlutterSecureStorage();
+  final TokenStorage _storage = VariableHolder.getStorage();
 
-  void _onLoginSuccess() {
-    setState(() => _isAuthenticated = true);
+  void _onLoginSuccess() async {
+    String? token = await _storage.getAccessToken();
+    setState(() {
+      if (token != null) widget.authState.login(token);
+    });
   }
 
   Widget _getView(AppPage page) {
@@ -67,12 +93,12 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> removeAuth() async {
-    await _storage.deleteAll();
+    widget.authState.logout();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isAuthenticated) {
+    if (widget.authState.isAuthorized) {
       return LayoutBuilder(
         builder: (context, constraints) {
           final bool isMobile = constraints.maxWidth < 600;
@@ -95,15 +121,13 @@ class _MainScreenState extends State<MainScreen> {
             drawer: isMobile
                 ? Drawer(
                     child: Sidebar(
-                      isAuthenticated: _isAuthenticated,
+                      isAuthenticated: widget.authState.isAuthorized,
                       selectedPage: _selectedPage,
                       onPageSelected: (page) {
                         setState(() => _selectedPage = page);
                         Navigator.of(context).pop(); // close drawer
                       },
                       onLogout: (status) {
-                        _isAuthenticated = status;
-
                         removeAuth();
 
                         setState(() {});
@@ -117,13 +141,13 @@ class _MainScreenState extends State<MainScreen> {
                 children: [
                   if (!isMobile)
                     Sidebar(
-                      isAuthenticated: _isAuthenticated,
+                      isAuthenticated: widget.authState.isAuthorized,
                       selectedPage: _selectedPage,
                       onPageSelected: (page) {
                         setState(() => _selectedPage = page);
                       },
                       onLogout: (status) {
-                        _isAuthenticated = status;
+                        removeAuth();
                         setState(() {});
                       },
                       isMobile: isMobile,
@@ -162,7 +186,8 @@ class _MainScreenState extends State<MainScreen> {
         ),
         themeMode: ThemeMode.system,
         // ✅ auto-switches light/dark based on system
-        home: LoginPage(onLoginSuccess: _onLoginSuccess, storage: _storage), // login first
+        home: LoginPage(
+            onLoginSuccess: _onLoginSuccess, storage: _storage), // login first
       );
     }
   }

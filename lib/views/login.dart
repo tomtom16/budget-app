@@ -1,13 +1,14 @@
+import 'package:budget_app/auth/token_storage.dart';
 import 'package:budget_app/services/budget_service.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../dto/login_request.dart';
 import '../enums/enums.dart';
 
 class LoginPage extends StatefulWidget {
   final VoidCallback onLoginSuccess;
-  final FlutterSecureStorage storage;
+
+  final TokenStorage storage;
 
   const LoginPage(
       {required this.onLoginSuccess, required this.storage, Key? key})
@@ -45,9 +46,8 @@ class _LoginPageState extends State<LoginPage> {
 
         debugPrint(response.token);
 
-        await widget.storage.write(key: 'authToken', value: response.token);
-        await widget.storage
-            .write(key: 'refreshToken', value: response.refreshToken);
+        await widget.storage.saveAccessToken(response.token);
+        await widget.storage.saveRefreshToken(response.refreshToken);
 
         widget.onLoginSuccess();
       } catch (e, stack) {

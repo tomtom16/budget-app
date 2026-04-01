@@ -1,6 +1,8 @@
 
 
-import 'package:budget_app/context/auth_interceptor.dart';
+import 'package:budget_app/auth/auth_interceptor.dart';
+import 'package:budget_app/auth/token_storage.dart';
+import 'package:budget_app/auth/token_storage_factory.dart';
 import 'package:budget_app/enums/enums.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +18,11 @@ class VariableHolder {
   static Dio dio = new Dio();
   static bool _dioPrepared = false;
 
-  static FlutterSecureStorage storage = FlutterSecureStorage();
+  static TokenStorage _storage = createTokenStorage();
+
+  static TokenStorage getStorage() {
+    return _storage;
+  }
 
   static List<CategoryData> getCategories() {
     return CATEGORIES;
@@ -53,7 +59,7 @@ class VariableHolder {
   static Dio getDio() {
     if (!_dioPrepared) {
       // Add logging interceptor
-      dio.interceptors.add(AuthInterceptor(dio, storage));
+      dio.interceptors.add(AuthInterceptor(dio, _storage));
       dio.interceptors.add(
         InterceptorsWrapper(
           onRequest: (options, handler) {
