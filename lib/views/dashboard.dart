@@ -18,6 +18,9 @@ class _DashboardViewState extends State<DashboardView> {
   String? _error;
   TimeRange _selectedRange = TimeRange.monthly;
 
+  double total = 0;
+  String totalString = '';
+
   DateTime currentDate = DateTime.timestamp();
 
   @override
@@ -31,6 +34,13 @@ class _DashboardViewState extends State<DashboardView> {
     try {
       categoryData =
           await BudgetService.getExpenseStatistics(_selectedRange, date);
+
+      total = 0;
+      for (var cat in categoryData) {
+        total += cat.total;
+      }
+      totalString = total.toStringAsFixed(2);
+
       setState(() {
         _isLoading = false;
       });
@@ -162,24 +172,16 @@ class _DashboardViewState extends State<DashboardView> {
         padding: const EdgeInsets.all(24.0),
         child: SingleChildScrollView(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: widgets
-          ),
+              crossAxisAlignment: CrossAxisAlignment.start, children: widgets),
         ));
   }
 
   List<Widget> _buildChart() {
     if (categoryData.isEmpty) {
       return [
-        SizedBox(
-          height: 32
-        ),
+        SizedBox(height: 32),
         Center(
-          child: SizedBox(
-            height: 32,
-            child: const Text('No data available')
-          )
-        )
+            child: SizedBox(height: 32, child: const Text('No data available')))
       ];
     } else {
       return [
@@ -213,8 +215,10 @@ class _DashboardViewState extends State<DashboardView> {
           ),
         ),
         const SizedBox(height: 24),
-        Text('Category Breakdown',
-            style: Theme.of(context).textTheme.titleMedium),
+        Center(
+          child: Text('Category Breakdown',
+              style: Theme.of(context).textTheme.titleMedium),
+        ),
         const SizedBox(height: 12),
         _buildTable(),
       ];
@@ -222,8 +226,8 @@ class _DashboardViewState extends State<DashboardView> {
   }
 
   Widget _buildTable() {
-    return Center(
-      child: SingleChildScrollView(
+    return Column(children: [
+      SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: DataTable(
           columns: const [
@@ -305,6 +309,10 @@ class _DashboardViewState extends State<DashboardView> {
           ],
         ),
       ),
-    );
+      Center(
+        child: Text('Category Totals: ${totalString}€',
+            style: Theme.of(context).textTheme.titleMedium),
+      ),
+    ]);
   }
 }

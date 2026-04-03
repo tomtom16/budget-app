@@ -1,5 +1,4 @@
 import 'package:budget_app/context/variable_holder.dart';
-import 'package:budget_app/dto/category_data.dart';
 import 'package:budget_app/dto/transaction_data.dart';
 import 'package:budget_app/services/budget_service.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +17,9 @@ class _TransactionsViewState extends State<TransactionsView> {
   String? errorMessage;
   DateTime currentDate = DateTime.timestamp();
 
+  double total = 0;
+  String totalString = '';
+
   @override
   void initState() {
     super.initState();
@@ -34,29 +36,17 @@ class _TransactionsViewState extends State<TransactionsView> {
     }
   }
 
-  void initData(dynamic input) {
-    for (var item in input) {
-      CategoryData category = CategoryData(
-          name: item['category']['name'],
-          color: BudgetService.parseColor(item['category']['color']),
-          type: item['category']['type'],
-          percentage: 0.0,
-          total: 0.0);
-
-      TransactionData data = TransactionData(
-          date: item['date'],
-          description: item['description'],
-          price: item['value'],
-          category: category,
-          comment: item['comment'] != null ? item['comment'] : '');
-
-      transactions.add(data);
-    }
-  }
-
   Future<void> fetchTransactions(DateTime date) async {
     try {
       transactions = await BudgetService.getTransactions(date);
+
+      total = 0;
+      for (var transaction in transactions) {
+        total += transaction.price;
+      }
+
+      totalString = total.toStringAsFixed(2);
+
       initCategories();
 
       setState(() {
@@ -149,15 +139,9 @@ class _TransactionsViewState extends State<TransactionsView> {
   List<Widget> _buildTable() {
     if (transactions.isEmpty) {
       return [
-        SizedBox(
-            height: 32
-        ),
+        SizedBox(height: 32),
         Center(
-            child: SizedBox(
-                height: 32,
-                child: const Text('No data available')
-            )
-        )
+            child: SizedBox(height: 32, child: const Text('No data available')))
       ];
     } else {
       return [
@@ -200,7 +184,11 @@ class _TransactionsViewState extends State<TransactionsView> {
               }).toList(),
             ),
           ),
-        )
+        ),
+        Center(
+          child: Text('Transaction Totals: ${totalString}€',
+              style: Theme.of(context).textTheme.titleMedium),
+        ),
       ];
     }
   }
