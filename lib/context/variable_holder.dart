@@ -1,6 +1,7 @@
 
 
 import 'package:budget_app/auth/auth_interceptor.dart';
+import 'package:budget_app/auth/auth_state.dart';
 import 'package:budget_app/auth/token_storage.dart';
 import 'package:budget_app/auth/token_storage_factory.dart';
 import 'package:budget_app/enums/enums.dart';
@@ -19,6 +20,12 @@ class VariableHolder {
   static bool _dioPrepared = false;
 
   static TokenStorage _storage = createTokenStorage();
+
+  static AuthState _authState = AuthState(_storage);
+
+  static AuthState getAuthState() {
+    return _authState;
+  }
 
   static TokenStorage getStorage() {
     return _storage;
@@ -59,7 +66,7 @@ class VariableHolder {
   static Dio getDio() {
     if (!_dioPrepared) {
       // Add logging interceptor
-      dio.interceptors.add(AuthInterceptor(dio, _storage));
+      dio.interceptors.add(AuthInterceptor(dio, _storage, _authState));
       dio.interceptors.add(
         InterceptorsWrapper(
           onRequest: (options, handler) {

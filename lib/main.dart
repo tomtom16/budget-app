@@ -4,7 +4,6 @@ import 'package:budget_app/views/login.dart';
 import 'package:flutter/material.dart';
 
 import 'auth/token_storage.dart';
-import 'auth/token_storage_factory.dart';
 import 'enums/enums.dart';
 import 'views/add_entry_view.dart';
 import 'views/dashboard.dart';
@@ -17,19 +16,17 @@ import 'widgets/sidebar.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final storage = createTokenStorage();
-  final authState = AuthState(storage);
+  final authState = VariableHolder.getAuthState();
 
   await authState.init(); // 🔥 important
 
-  runApp(MyApp(authState, storage));
+  runApp(MyApp(authState));
 }
 
 class MyApp extends StatelessWidget {
   final AuthState authState;
-  final TokenStorage storage;
 
-  const MyApp(this.authState, this.storage);
+  const MyApp(this.authState);
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +36,7 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           title: 'Budget App',
           theme: ThemeData.light(),
-          home: MainScreen(authState),
+          home: MainScreen(),
         );
       },
     );
@@ -47,9 +44,9 @@ class MyApp extends StatelessWidget {
 }
 
 class MainScreen extends StatefulWidget {
-  AuthState authState;
+  final AuthState authState = VariableHolder.getAuthState();
 
-  MainScreen(this.authState);
+  MainScreen();
 
   @override
   State<MainScreen> createState() => _MainScreenState();

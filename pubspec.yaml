@@ -13,7 +13,7 @@ dependencies:
   dio: ^5.4.0
   intl: ^0.20.2
   image_picker: ^1.0.7
-  google_mlkit_text_recognition: ^0.15.0
+  google_mlkit_text_recognition: ^0.14.0
   flutter_secure_storage: ^10.0.0
   universal_html: ^2.2.4
 
@@ -29,3 +29,5 @@ flutter:
   # Optional: Add asset folders if needed in the future
   # assets:
   #   - assets/images/
+  assets:
+    - assets/images/logo_alt.png

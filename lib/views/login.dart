@@ -125,6 +125,11 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  Image.asset(
+                    'assets/images/logo_alt.png',
+                    height: 100,
+                  ),
+                  SizedBox(height: 16),
                   Text("Login",
                       style: Theme.of(context).textTheme.headlineMedium),
                   SizedBox(height: 16),

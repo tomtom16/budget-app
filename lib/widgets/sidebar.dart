@@ -8,13 +8,12 @@ class Sidebar extends StatefulWidget {
   final ValueChanged<bool> onLogout;
   final bool isMobile;
 
-  Sidebar({
-    required this.isAuthenticated,
-    required this.selectedPage,
-    required this.onPageSelected,
-    required this.onLogout,
-    required this.isMobile
-  });
+  Sidebar(
+      {required this.isAuthenticated,
+      required this.selectedPage,
+      required this.onPageSelected,
+      required this.onLogout,
+      required this.isMobile});
 
   @override
   State<Sidebar> createState() => _SidebarState(isMobile);
@@ -48,19 +47,21 @@ class _SidebarState extends State<Sidebar> {
         children: [
           // Logo or Title
           Padding(
-            padding: const EdgeInsets.only(top: 48, left: 16, right: 16, bottom: 16),
+            padding:
+                const EdgeInsets.only(top: 48, left: 16, right: 16, bottom: 16),
             child: isCollapsed
                 ? Icon(Icons.stacked_bar_chart, color: Colors.white, size: 28)
                 : Row(
-              children: [
-                Icon(Icons.stacked_bar_chart, color: Colors.white, size: 28),
-                SizedBox(width: 10),
-                Text(
-                  'Budget App',
-                  style: TextStyle(color: Colors.white, fontSize: 20),
-                ),
-              ],
-            ),
+                    children: [
+                      Icon(Icons.stacked_bar_chart,
+                          color: Colors.white, size: 28),
+                      SizedBox(width: 10),
+                      Text(
+                        'Budget App',
+                        style: TextStyle(color: Colors.white, fontSize: 20),
+                      ),
+                    ],
+                  ),
           ),
           Divider(color: Colors.white24),
           // Navigation Buttons
@@ -132,19 +133,15 @@ class _SidebarState extends State<Sidebar> {
   }
 
   Widget _buildLogoutButton() {
-    if (!isMobile) {
-      // Collapse Button
-      return IconButton(
-        icon: Icon(
-          Icons.logout,
-          color: Colors.white70,
-          size: 18,
-        ),
-        onPressed: toggleAuth,
-      );
-    } else {
-      return SizedBox(height: 16);
-    }
+    // Collapse Button
+    return IconButton(
+      icon: Icon(
+        Icons.logout,
+        color: Colors.white70,
+        size: 18,
+      ),
+      onPressed: toggleAuth,
+    );
   }
 }
 

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:budget_app/auth/auth_state.dart';
 import 'package:budget_app/auth/token_storage.dart';
 import 'package:budget_app/context/variable_holder.dart';
 import 'package:dio/dio.dart';
@@ -7,11 +8,12 @@ import 'package:dio/dio.dart';
 class AuthInterceptor extends Interceptor {
   final Dio dio;
   final TokenStorage storage;
+  final AuthState authState;
 
   bool _isRefreshing = false;
   List<Completer<String>> _retryQueue = [];
 
-  AuthInterceptor(this.dio, this.storage);
+  AuthInterceptor(this.dio, this.storage, this.authState);
 
   @override
   void onRequest(
@@ -67,7 +69,7 @@ class AuthInterceptor extends Interceptor {
       final refreshToken = await storage.getRefreshToken();
 
       final response = await dio.post(
-        VariableHolder.getAuthBaseUrl() + '/refresh',
+        VariableHolder.getAuthBaseUrl() + '/api/v1/refresh',
         data: {'refreshToken': refreshToken},
         options: Options(headers: {'X-Api-Key': '11112'}), // important!
       );
@@ -93,7 +95,7 @@ class AuthInterceptor extends Interceptor {
   }
 
   Future<void> _logout() async {
-    await storage.clear();
+    await authState.logout();
 
     // TODO: Navigate to login screen
   }
